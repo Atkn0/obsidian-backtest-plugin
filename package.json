@@ -1,0 +1,14 @@
+{
+  "name": "obsidian_backtest_plugin",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/Atkn0/obsidian-backtest-plugin",
+  "author": "Arda Atakan Tosun <a.atakantosun@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.15.2",
+    "obsidian": "^1.8.7",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.3"
+  }
+}
