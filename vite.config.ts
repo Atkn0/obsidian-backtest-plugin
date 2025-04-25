@@ -9,6 +9,9 @@ export default defineConfig({
       entry: './src/main.ts',
       formats: ['cjs'],
       fileName: () => 'main.js'
+    },
+    rollupOptions: {
+      external: ['obsidian'] // ✨ obsidian paketini bundle içine alma!
     }
   }
 });
