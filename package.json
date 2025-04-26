@@ -7,11 +7,13 @@
     "dev": "vite"
   },
   "devDependencies": {
+    "@types/node": "^20.8.10",
     "typescript": "^5.4.0",
-    "vite": "^4.5.0",
-    "@types/node": "^20.8.10"
+    "vite": "^4.5.0"
   },
   "dependencies": {
-    "obsidian": "^1.5.0"
+    "jimp": "^1.6.0",
+    "obsidian": "^1.5.0",
+    "tesseract.js": "^6.0.1"
   }
 }
