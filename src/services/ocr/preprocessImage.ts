@@ -1,8 +1,8 @@
 import { Jimp } from 'jimp';
 
-export async function preprocessImage(image: typeof Jimp.prototype): Promise<typeof Jimp.prototype> {
+export async function preprocessImage(image: InstanceType<typeof Jimp>): Promise<InstanceType<typeof Jimp>> {
   return image
     .greyscale()
     .contrast(0.5)
-    .normalize();
+    .normalize() as InstanceType<typeof Jimp>;
 }

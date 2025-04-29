@@ -4,11 +4,15 @@ import { detectPriceColor } from './detectPriceColors';
 import { TradeData } from '../../domain/models/tradeData';
 import path from 'path';
 
-export async function parseTradeData(boxes: OCRBox[], image: typeof Jimp.prototype, imagePath: string): Promise<TradeData | null> {
+export async function parseTradeData(
+  boxes: OCRBox[],
+  image: InstanceType<typeof Jimp>,
+  imagePath: string,
+  symbol: string
+): Promise<TradeData | null> {
   let entryPrice: number | null = null;
   let takeProfitPrice: number | null = null;
   let stopLossPrice: number | null = null;
-  let symbol: string = 'UNKNOWN';
 
   for (const box of boxes) {
     const priceType = await detectPriceColor(image, box);
@@ -26,20 +30,9 @@ export async function parseTradeData(boxes: OCRBox[], image: typeof Jimp.prototy
     }
   }
 
-  if (!entryPrice || !takeProfitPrice || !stopLossPrice) {
+  if (entryPrice === null || takeProfitPrice === null || stopLossPrice === null) {
     console.warn('❗ Tüm gerekli fiyatlar bulunamadı.');
     return null;
-  }
-
-  // Sembolü üst taraftan OCR çıktısından yakalamaya çalışıyoruz
-  const firstLine = boxes
-    .filter(b => b.y < 100) // İlk 100px içinde olan kutular (üst metin)
-    .map(b => b.text)
-    .join(' ');
-
-  const symbolMatch = firstLine.match(/([A-Z]{3,6})/);
-  if (symbolMatch) {
-    symbol = symbolMatch[1];
   }
 
   const timestamp = extractTimestampFromFilename(imagePath);
