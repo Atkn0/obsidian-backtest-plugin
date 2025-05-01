@@ -12,8 +12,8 @@
     "vite": "^4.5.0"
   },
   "dependencies": {
-    "jimp": "^1.6.0",
     "obsidian": "^1.5.0",
+    "sharp": "^0.34.1",
     "tesseract.js": "^6.0.1"
   }
 }

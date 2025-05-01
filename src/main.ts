@@ -1,4 +1,4 @@
-import { Plugin } from 'obsidian';
+import { Notice, Plugin } from 'obsidian';
 import { FileWatcher } from './infrastructure/fileWatcher';
 import { OCRService } from './services/ocr/ocrService'; 
 import { TradeData } from './domain/models/tradeData';

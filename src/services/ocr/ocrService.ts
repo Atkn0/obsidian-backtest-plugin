@@ -1,4 +1,4 @@
-import { Jimp } from 'jimp';
+import sharp from 'sharp';
 import { preprocessImage } from './preprocessImage';
 import { extractTextBoxes } from './extractTextBoxes';
 import { parseTradeData } from './parseTradeData';
@@ -10,8 +10,7 @@ export class OCRService {
   async extractTradeData(imagePath: string): Promise<TradeData | null> {
     try {
       console.log('📥 Loading image:', imagePath);
-      const originalImage = await Jimp.read(imagePath);
-      const image = originalImage as InstanceType<typeof Jimp>;
+      const image = sharp(imagePath);
       
       console.log('🎨 Preprocessing image...');
       const preprocessed = await preprocessImage(image);
