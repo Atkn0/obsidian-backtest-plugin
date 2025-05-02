@@ -1,9 +1,9 @@
 import sharp from 'sharp';
 import { preprocessImage } from './preprocessImage';
 import { extractTextBoxes } from './extractTextBoxes';
-import { parseTradeData } from './parseTradeData';
 import { cropTopPanel } from './cropTopPanel';
 import { extractSymbol } from './extractSymbol';
+import { analyzePricePanel } from './analyzePricePanel';
 import { TradeData } from '../../domain/models/tradeData';
 
 export class OCRService {
@@ -15,11 +15,6 @@ export class OCRService {
       console.log('🎨 Preprocessing image...');
       const preprocessed = await preprocessImage(image);
 
-      console.log('📦 Extracting text boxes...');
-      const boxes = await extractTextBoxes(preprocessed);
-      console.log('Found boxes:', boxes.length);
-      boxes.forEach(box => console.log('Box text:', box.text));
-
       console.log('🎯 Cropping top panel...');
       const topPanel = await cropTopPanel(image);
       
@@ -27,11 +22,22 @@ export class OCRService {
       const symbol = await extractSymbol(topPanel);
       console.log('Symbol detected:', symbol);
 
-      console.log('💹 Parsing trade data...');
-      const tradeData = await parseTradeData(boxes, preprocessed, imagePath, symbol);
-      console.log('Trade data result:', tradeData);
+      if (!symbol || symbol === 'UNKNOWN') {
+        console.error('❌ Symbol detection failed');
+        return null;
+      }
+
+      console.log('💹 Analyzing price panel...');
+      const tradeData = await analyzePricePanel(imagePath, symbol);
       
-      return tradeData;
+      if (tradeData) {
+        console.log('✅ Trade data extracted successfully:');
+        console.log(tradeData);
+        return tradeData;
+      } else {
+        console.error('❌ Price panel analysis failed');
+        return null;
+      }
     } catch (error) {
       console.error('❌ Error in OCR process:', error);
       return null;

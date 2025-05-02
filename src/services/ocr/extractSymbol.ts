@@ -19,18 +19,36 @@ export async function extractSymbol(image: sharp.Sharp | string): Promise<string
       sharpInstance = image;
     }
     
-    // Görüntüyü işle - contrast ve brightness ayarla
-    const processedImage = sharpInstance
-      .gamma(2.2) // contrast benzeri efekt
-      .modulate({ brightness: 1.2 }); // brightness ayarı
+    // Görüntünün sadece sol üst köşesini kes (sembol genellikle buradadır)
+    const metadata = await sharpInstance.metadata();
+    const width = metadata.width || 1000;
+    const height = metadata.height || 700;
+    
+    // Sol üst köşeyi kırp - genellikle sembol burada olur
+    const croppedImage = sharpInstance.extract({
+      left: 0,
+      top: 0,
+      width: Math.min(300, width),
+      height: Math.min(50, height)
+    });
+    
+    // Görüntüyü işle - sembol daha net görünsün diye kontrast ve netlik artır
+    const processedImage = croppedImage
+      .gamma(2.2) // Kontrast benzeri efekt
+      .modulate({ brightness: 1.2, saturation: 1.3 }) // Parlaklık ayarı
+      .sharpen({ sigma: 1.0 }); // Netlik artır
     
     // PNG olarak buffer oluştur
     const buffer = await processedImage.toBuffer();
     console.log('Buffer oluşturuldu:', buffer.length, 'bytes');
+    
+    // Debug için görüntüyü kaydet
+    fs.writeFileSync('symbol_debug.png', buffer);
 
     // Tesseract OCR işlemi - özel konfigürasyon ile
+    // Daha fazla karakteri tanıması için whitelist genişletildi
     const options: ExtendedWorkerOptions = {
-      tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.',
+      tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,.',
       tessedit_pageseg_mode: '7' // Treat the image as a single text line
     };
 
@@ -42,10 +60,14 @@ export async function extractSymbol(image: sharp.Sharp | string): Promise<string
     const text = result.data.text.trim();
     
     // Virgülden önceki kısmı al (TradingView'da genelde "SYMBOL, timeframe" formatında)
-    const symbolPart = text.split(',')[0];
+    // veya ilk kelimeyi al
+    let symbolText = text.split(',')[0];
+    if (symbolText.includes(' ')) {
+      symbolText = symbolText.split(' ')[0]; // İlk kelimeyi al
+    }
     
     // Boşlukları temizle ve büyük harfe çevir
-    const symbol = symbolPart.replace(/\s+/g, '').toUpperCase();
+    const symbol = symbolText.replace(/\s+/g, '').toUpperCase();
     
     // Sembol geçerli mi kontrol et
     if (symbol && /^[A-Z0-9]+$/.test(symbol)) {
