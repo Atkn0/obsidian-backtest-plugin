@@ -6,8 +6,11 @@
     "build": "vite build",
     "dev": "vite",
     "test:entry": "ts-node src/test/testEntryPrice.ts",
+    "test:tp": "ts-node src/test/testTPPrice.ts",
     "test:ocr": "ts-node src/test/testMultiOCR.ts",
-    "test:symbol": "ts-node src/test/testSymbol.ts"
+    "test:symbol": "ts-node src/test/testSymbol.ts",
+    "test:stop": "ts-node src/test/findStopPrice.ts"
+
   },
   "devDependencies": {
     "@types/node": "^20.17.32",
