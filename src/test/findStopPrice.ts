@@ -631,10 +631,22 @@ async function extractTextFromStopBox(panelBuffer: Buffer, box: { x: number, y: 
     const marginX = Math.floor(box.width * 0.2);
     const marginY = Math.floor(box.height * 0.5);
     
+    // Görüntünün boyutlarını al
+    const metadata = await sharp(panelBuffer).metadata();
+    const imageWidth = metadata.width || 0;
+    const imageHeight = metadata.height || 0;
+    
     const cropX = Math.max(0, box.x - marginX);
     const cropY = Math.max(0, box.y - marginY);
-    const cropWidth = Math.min(box.width + (marginX * 2), box.x + box.width + marginX);
-    const cropHeight = Math.min(box.height + (marginY * 2), box.y + box.height + marginY);
+    // Düzeltilmiş width ve height hesaplamaları
+    const cropWidth = Math.min(box.width + (marginX * 2), imageWidth - cropX);
+    const cropHeight = Math.min(box.height + (marginY * 2), imageHeight - cropY);
+    
+    // Sıfır veya negatif boyutlar için kontrol ekle
+    if (cropWidth <= 0 || cropHeight <= 0) {
+      console.error('Geçersiz kırpma boyutları:', { cropX, cropY, cropWidth, cropHeight });
+      return null;
+    }
     
     const stopBoxImage = await sharp(panelBuffer)
       .extract({ 
@@ -668,7 +680,7 @@ async function extractTextFromStopBox(panelBuffer: Buffer, box: { x: number, y: 
     
     const filename3 = `stop_box_processed_2_${timestamp}.png`;
     fs.writeFileSync(filename3, processed2);
-    
+
     const processed3 = await sharp(stopBoxImage)
       .resize({ height: cropHeight * 5 })
       .toColourspace('b-w')
@@ -717,6 +729,13 @@ async function extractTextFromStopBox(panelBuffer: Buffer, box: { x: number, y: 
     val = r3.data.text.trim();
     
     // Clean the result to keep only relevant characters
+    // İlk olarak satır bazlı ayırma işlemi yap ve sadece ilk satırı al
+    const lines = val.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    if (lines.length > 0) {
+      val = lines[0]; // Sadece ilk satırı al
+    }
+    
+    // Temizleme işlemlerini yap
     val = val.replace(/[^\d.,+-]/g, '')
              .replace(/^[.,]/, '')
              .replace(/[.,]$/, '')
@@ -725,7 +744,11 @@ async function extractTextFromStopBox(panelBuffer: Buffer, box: { x: number, y: 
              .trim();
     
     if (!val) {
-      val = r2.data.text.trim().replace(/[^\d.,+-]/g, '').trim();
+      // Alternatif olarak r2 sonucunu dene
+      const r2lines = r2.data.text.trim().split('\n').map(line => line.trim()).filter(line => line.length > 0);
+      if (r2lines.length > 0) {
+        val = r2lines[0].replace(/[^\d.,+-]/g, '').trim();
+      }
     }
     
     console.log(`Cleaned: "${val}"`);
